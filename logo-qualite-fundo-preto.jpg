@@ -1,0 +1,33 @@
+
+const CONFIG = {
+  whatsappNumber: '5562999999999', // Troque pelo WhatsApp oficial com DDI e DDD. Exemplo: 5562999999999
+  defaultMessage: 'Olá, vim pelo site da Qualitê Consultoria e Projetos e gostaria de solicitar atendimento.'
+};
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+function whatsappLink(msg=CONFIG.defaultMessage){return `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`}
+$$('[data-whatsapp]').forEach(a=>a.setAttribute('href', whatsappLink()));
+const menu = $('.menu-toggle'); const nav = $('.main-nav');
+if(menu){menu.addEventListener('click',()=>{nav.classList.toggle('open'); menu.setAttribute('aria-expanded',nav.classList.contains('open'));});}
+document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href'); if(id.length>1){const el=$(id); if(el){e.preventDefault(); el.scrollIntoView({behavior:'smooth'});}}}));
+$$('.filters button').forEach(btn=>btn.addEventListener('click',()=>{ $$('.filters button').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); const f=btn.dataset.filter; $$('.project-card').forEach(card=>{card.style.display=(f==='all'||card.dataset.cat===f)?'block':'none';}); }));
+const login = $('#clientLogin');
+if(login){
+  login.addEventListener('submit', async e=>{
+    e.preventDefault();
+    const msg=$('#loginMsg'); msg.textContent='Validando acesso...';
+    try{
+      const data = await fetch('assets/data/clientes.json').then(r=>r.json());
+      const email=$('#email').value.trim().toLowerCase(), senha=$('#senha').value.trim(), codigo=$('#codigo').value.trim().toUpperCase();
+      const user = data.usuarios.find(u=>u.email.toLowerCase()===email && u.senha===senha && u.codigo.toUpperCase()===codigo);
+      if(!user){msg.textContent='Dados não localizados. Verifique e tente novamente.'; return;}
+      login.classList.add('hidden'); $('#clientPanel').classList.remove('hidden');
+      $('#clienteNome').textContent=user.nome; $('#clienteServico').textContent=user.servico; $('#clienteStatus').textContent=user.status; $('#clienteResponsavel').textContent=user.responsavel;
+      $('#docList').innerHTML=user.documentos.map(d=>`<div class="doc-item"><strong>${d.titulo}</strong><a class="btn btn-small" href="${d.arquivo}" download>Baixar</a></div>`).join('');
+      $('#histList').innerHTML=user.historico.map(i=>`<li>${i}</li>`).join(''); $('#proxList').innerHTML=user.proximas.map(i=>`<li>${i}</li>`).join('');
+    }catch(err){msg.textContent='Erro ao carregar dados. Verifique o arquivo clientes.json.';}
+  });
+  $('#sairCliente')?.addEventListener('click',()=>{location.reload();});
+}
+const form = $('#contactForm');
+if(form){form.addEventListener('submit',e=>{e.preventDefault(); const nome=$('#nomeContato').value, tel=$('#telefoneContato').value, serv=$('#servicoContato').value, mensagem=$('#mensagemContato').value; const texto=`Olá, vim pelo site da Qualitê Consultoria e Projetos.%0A%0ANome: ${nome}%0ATelefone: ${tel}%0AServiço: ${serv}%0AMensagem: ${mensagem}`; window.open(whatsappLink(texto),'_blank'); $('#contatoMsg').textContent='Abrindo WhatsApp para envio da mensagem.';});}
