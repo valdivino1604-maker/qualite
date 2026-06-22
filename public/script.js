@@ -1,0 +1,1 @@
+document.addEventListener('DOMContentLoaded',()=>{const r=document.querySelectorAll('.reveal');const o=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('on');o.unobserve(x.target)}})},{threshold:.14});r.forEach(x=>o.observe(x));});
